@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제16대 대통령 말씀록 DB</title>
+<style>
+:root{
+  --bg:#F1F3F8;--card:#fff;--b:#DDE2EC;--b2:#EEF1F8;
+  --ink:#0F1623;--ink2:#2A3244;--ink3:#5A6579;--ink4:#8C97AC;
+  --blue:#1A4FAE;--bl:#EAF0FB;--bt:#1033A0;
+  --teal:#0B7A72;--tl:#DFF3F0;
+  --green:#2A7A30;--gl:#E6F5E8;
+  --amber:#9A5E0A;--al:#FEF3DC;
+  --red:#A02020;--rl:#FAEBEB;
+  --purple:#6030B0;--pl:#F2ECFA;
+  --nav:#0D1525;
+  --r:7px;--rlg:12px;
+  --sans:'Apple SD Gothic Neo','Noto Sans KR','Malgun Gothic',sans-serif;
+  --mono:'Menlo','Consolas',monospace;
+  --serif:'Georgia','Batang',serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.65;min-height:100vh}
+button,input,select,textarea{font-family:var(--sans)}
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.nav{background:var(--nav);padding:0 20px;height:48px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.n-badge{background:var(--blue);color:#fff;font-size:9.5px;font-weight:700;letter-spacing:.07em;padding:2px 7px;border-radius:3px}
+.n-title{color:#fff;font-size:14px;font-weight:500}
+.n-sub{color:rgba(255,255,255,.28);font-size:11.5px;margin-left:2px}
+.n-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.n-btn{color:rgba(255,255,255,.5);font-size:12px;padding:4px 10px;border-radius:4px;cursor:pointer;border:1px solid transparent;background:transparent;transition:.12s}
+.n-btn:hover{color:#fff;border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.08)}
+.n-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);color:rgba(255,255,255,.4);font-size:10px;padding:2px 7px;border-radius:3px;font-family:var(--mono)}
+.body{display:flex;flex:1;overflow:hidden}
+.sb{width:210px;background:var(--card);border-right:1px solid var(--b);overflow-y:auto;flex-shrink:0}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.sb-top{padding:12px 14px 8px;border-bottom:1px solid var(--b2)}
+.sb-top-t{font-size:11px;font-weight:600;color:var(--ink2)}
+.sb-top-s{font-size:10px;color:var(--ink4);margin-top:1px}
+.sb-sec{padding:8px 0 2px}
+.sb-h{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);padding:0 12px 3px}
+.sb-i{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;cursor:pointer;border-left:2px solid transparent;transition:.1s;user-select:none}
+.sb-i:hover{background:var(--bg);color:var(--blue)}
+.sb-i.on{background:var(--bl);border-left-color:var(--blue)}
+.sb-i.on .sb-nm{color:var(--blue);font-weight:500}
+.sb-nm{font-size:12px;color:var(--ink2)}
+.sb-ct{font-size:10px;color:var(--ink4);font-family:var(--mono);background:var(--b2);padding:1px 5px;border-radius:3px}
+.sb-i.on .sb-ct{background:rgba(26,79,174,.12);color:var(--blue)}
+.sb-div{height:1px;background:var(--b2);margin:4px 12px}
+.enc-legend{padding:5px 12px 8px;font-size:11px}
+.enc-row{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.enc-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sbar{background:var(--card);border-bottom:1px solid var(--b);padding:12px 20px;flex-shrink:0}
+.srow{display:flex;gap:7px;max-width:680px}
+.sw{flex:1;display:flex;align-items:center;border:1.5px solid var(--blue);border-radius:var(--r);overflow:hidden}
+.si{flex:1;border:none;outline:none;font-size:14px;padding:8px 6px;color:var(--ink)}
+.si::placeholder{color:var(--ink4)}
+.sic{padding:0 10px;color:var(--blue);font-size:15px}
+.sbtn{background:var(--blue);color:#fff;border:none;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;border-radius:0 var(--r) var(--r) 0}
+.sbtn:hover{background:var(--bt)}
+.chips{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap}
+.chip{border:1px solid var(--b);background:var(--card);border-radius:20px;padding:3px 10px;font-size:11.5px;color:var(--ink3);cursor:pointer;transition:.1s;user-select:none}
+.chip:hover{border-color:var(--blue);color:var(--blue)}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.toolbar{background:var(--bg);border-bottom:1px solid var(--b);padding:7px 20px;display:flex;align-items:center;gap:7px;flex-wrap:wrap;flex-shrink:0}
+.tb-label{font-size:10.5px;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;margin-right:2px}
+.tbtn{display:inline-flex;align-items:center;gap:4px;border:1px solid var(--b);background:var(--card);color:var(--ink2);padding:4px 12px;border-radius:var(--r);font-size:12px;cursor:pointer;transition:.1s;font-weight:500;white-space:nowrap}
+.tbtn:hover{border-color:var(--blue);color:var(--blue)}
+.tbtn.p{background:var(--blue);border-color:var(--blue);color:#fff}
+.tbtn.p:hover{background:var(--bt)}
+.tbtn.green{background:var(--green);border-color:var(--green);color:#fff}
+.tbtn.green:hover{background:#1e5c22}
+.tb-sep{color:var(--b);font-size:16px}
+.tb-count{font-size:11.5px;color:var(--ink4);margin-left:auto}
+
+/* ── SELECTION BAR ── */
+.sel-bar{background:var(--blue);color:#fff;padding:8px 20px;display:none;align-items:center;gap:8px;font-size:13px;flex-shrink:0;border-bottom:2px solid #0C2A8A}
+.sel-bar.on{display:flex}
+.sel-count{font-weight:600;margin-right:4px}
+.sel-fmt{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:var(--r);padding:4px 12px;font-size:12px;cursor:pointer;transition:.1s}
+.sel-fmt:hover{background:rgba(255,255,255,.28)}
+.sel-clear{background:none;border:none;color:rgba(255,255,255,.6);cursor:pointer;font-size:12px;margin-left:auto;padding:3px 8px;border-radius:var(--r)}
+.sel-clear:hover{color:#fff;background:rgba(255,255,255,.12)}
+
+.rh{display:flex;align-items:center;justify-content:space-between;padding:10px 20px 4px;flex-shrink:0}
+.rc{font-size:13px;color:var(--ink2)}
+.rc strong{color:var(--blue);font-weight:500}
+.qhl{background:var(--bl);color:var(--bt);padding:1px 6px;border-radius:3px;margin-left:2px;font-size:12px}
+.rsort{font-size:12px;color:var(--ink3);border:1px solid var(--b);border-radius:var(--r);padding:3px 8px;background:var(--card);cursor:pointer}
+.rlist{flex:1;overflow-y:auto;padding:0 20px 20px}
+
+/* ── CARDS ── */
+.dc{background:var(--card);border:1px solid var(--b);border-radius:var(--rlg);padding:12px 14px;margin-bottom:8px;transition:border-color .12s,box-shadow .12s}
+.dc:hover{border-color:rgba(26,79,174,.25);box-shadow:0 2px 8px rgba(26,79,174,.06)}
+.dc.exp{border-color:var(--blue)}
+.dc.sel{border-color:var(--blue);background:#F5F8FF}
+.dc-row{display:flex;align-items:flex-start;gap:10px}
+.dc-cb{width:16px;height:16px;cursor:pointer;accent-color:var(--blue);flex-shrink:0;margin-top:4px}
+.dc-content{flex:1;min-width:0;cursor:pointer}
+.dc-top{display:flex;align-items:flex-start;gap:7px;margin-bottom:4px}
+.type-badge{flex-shrink:0;font-size:9.5px;font-weight:700;padding:3px 7px;border-radius:3px;letter-spacing:.04em;margin-top:2px}
+.tb-malss{background:#EEF6FF;color:#1A4FAE}.tb-toran{background:#E8F7F5;color:#0B7A72}
+.tb-damhwa{background:#F5F0FF;color:#6030B0}.tb-hoei{background:#FEF3DC;color:#9A5E0A}
+.tb-pyenji{background:#FFF0F0;color:#A02020}.tb-xml{background:#F2ECFA;color:#6030B0}
+.dc-title{font-size:13.5px;font-weight:500;color:var(--ink);flex:1;line-height:1.4}
+.enc-pill{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;padding:2px 6px;border-radius:3px;margin-left:5px;vertical-align:middle}
+.ep-ok{background:var(--gl);color:var(--green)}.ep-bad{background:var(--rl);color:var(--red)}
+.ep-import{background:var(--tl);color:var(--teal)}.ep-xml{background:var(--pl);color:var(--purple)}
+.dc-meta{display:flex;flex-wrap:wrap;gap:8px;font-size:11px;color:var(--ink4);align-items:center;margin-top:3px}
+.dc-id{font-family:var(--mono);font-size:10px}
+.dc-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:5px}
+.dc-tag{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--bg);border:1px solid var(--b);color:var(--ink3)}
+.dc-snip{font-size:12.5px;color:var(--ink3);line-height:1.6;margin-top:6px;border-top:1px solid var(--b2);padding-top:6px}
+.dc-snip .hl{background:#FFF59D;color:#6B5800;border-radius:2px;padding:0 1px;font-weight:500}
+.dc-more{font-size:11px;color:var(--ink4);text-align:right;margin-top:4px}
+.dc-det{display:none;margin-top:10px;border-top:1px solid var(--b2);padding-top:10px}
+.dc.exp .dc-det{display:block}
+.dg{display:grid;grid-template-columns:110px 1fr;gap:3px 10px;font-size:12px;margin-bottom:10px}
+.dl{color:var(--ink4);font-weight:500;padding:2px 0;font-size:11px}
+.dv{color:var(--ink2);padding:2px 0}
+.body-area{background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);padding:14px 16px;font-size:13px;color:var(--ink2);line-height:1.9;max-height:340px;overflow-y:auto;font-family:var(--serif)}
+.body-area p{margin-bottom:.6em}
+.body-area .center-p{text-align:center;color:var(--ink3);margin-top:1em}
+.no-content{background:var(--al);border:1px solid rgba(154,94,10,.15);border-radius:var(--r);padding:10px 14px;font-size:12.5px;color:var(--amber)}
+.det-acts{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.act{border:1px solid var(--b);background:var(--card);color:var(--ink2);padding:5px 12px;border-radius:var(--r);font-size:12px;cursor:pointer;transition:.1s}
+.act:hover{border-color:var(--blue);color:var(--blue)}
+.act.p{background:var(--blue);border-color:var(--blue);color:#fff}
+.act.p:hover{background:var(--bt)}
+
+/* ── XML PATH ── */
+.xml-meta-grid{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;font-size:12px;margin-bottom:10px}
+.xm-l{color:var(--ink4);font-size:11px;font-weight:500;padding:2px 0}
+.xm-v{color:var(--ink2);padding:2px 0;word-break:break-word}
+.attach-row{display:flex;align-items:center;gap:7px;padding:6px 10px;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);margin-bottom:4px}
+.att-name{font-size:12px;font-weight:500;color:var(--ink);flex:1}
+.path-flow{margin-top:8px}
+.pf-step{display:flex;align-items:stretch;min-height:48px}
+.pf-left{width:26px;display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+.pf-circle{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:13px;border:2px solid var(--b);background:var(--b2);color:var(--ink3)}
+.pf-line{width:2px;flex:1;margin:2px auto 0;background:var(--b)}
+.pf-body{flex:1;padding:8px 0 8px 10px}
+.pf-who{font-size:12px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.pf-date{font-size:10.5px;color:var(--ink4);font-family:var(--mono)}
+.pf-status{font-size:10px;font-weight:700;padding:1px 6px;border-radius:3px}
+.ps-report{background:var(--bl);color:var(--blue)}.ps-return{background:var(--rl);color:var(--red)}
+.ps-end{background:var(--gl);color:var(--green)}.ps-exec{background:var(--tl);color:var(--teal)}
+.pf-opinion{font-size:12px;color:var(--ink2);margin-top:3px;padding:4px 8px;background:var(--bg);border-left:2px solid var(--b);border-radius:0 4px 4px 0;line-height:1.5}
+.pf-opinion.highlight{border-left-color:#E5A800;background:#FFFBEC;color:#5C3C00;font-weight:500}
+.pf-meeting{font-size:10px;background:var(--al);color:var(--amber);padding:1px 6px;border-radius:3px}
+.pf-attach{font-size:10.5px;color:var(--teal);margin-top:2px}
+.pf-president .pf-circle{background:#E5A800;color:#fff;border-color:#E5A800}
+.pf-end-step .pf-circle{background:var(--gl);color:var(--green);border-color:var(--green)}
+.pf-return-step .pf-circle{background:var(--rl);color:var(--red);border-color:var(--red)}
+.pf-exec-step .pf-circle{background:var(--tl);color:var(--teal);border-color:var(--teal)}
+.president-opinion-box{background:#FFF9EC;border:1.5px solid #E5A800;border-radius:var(--r);padding:10px 14px;margin-top:8px}
+.pob-label{font-size:10.5px;font-weight:700;color:#9A6800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.pob-text{font-size:13px;color:#5C3C00;line-height:1.75;white-space:pre-wrap}
+.path-header{display:flex;align-items:center;gap:8px;margin-top:14px;margin-bottom:8px}
+.ph-title{font-size:11.5px;font-weight:700;color:var(--ink2);letter-spacing:.03em;text-transform:uppercase}
+.ph-count{background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:1px 7px;border-radius:10px}
+.ph-legend{margin-left:auto;display:flex;gap:6px;font-size:10.5px;color:var(--ink4);align-items:center}
+.leg-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:2px}
+
+/* ── MODAL ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border-radius:var(--rlg);width:520px;max-width:95vw;overflow:hidden}
+.modal-hd{background:var(--nav);color:#fff;padding:14px 18px;display:flex;align-items:center;justify-content:space-between}
+.modal-hd h3{font-size:14px;font-weight:500}
+.modal-close{background:rgba(255,255,255,.12);border:none;color:#fff;width:24px;height:24px;border-radius:4px;cursor:pointer;font-size:13px}
+.modal-body{padding:16px 18px;max-height:70vh;overflow-y:auto}
+.modal-footer{padding:10px 18px;border-top:1px solid var(--b);display:flex;gap:8px;justify-content:flex-end}
+.drop-zone{border:2px dashed var(--blue);border-radius:var(--r);padding:20px;text-align:center;background:var(--bl);cursor:pointer;position:relative;margin-bottom:12px;transition:.12s}
+.drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone:hover,.drop-zone.dragging{background:#d8e8f8;border-color:var(--bt)}
+.dz-hint{font-size:12.5px;color:var(--blue);font-weight:500;margin-bottom:2px}
+.dz-sub{font-size:11.5px;color:var(--ink4)}
+.sec-label{font-size:10.5px;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.import-status{margin-top:10px;padding:8px 12px;border-radius:var(--r);font-size:12.5px;display:none}
+.is-ok{background:var(--gl);color:var(--green);display:block}
+.is-err{background:var(--rl);color:var(--red);display:block}
+
+/* ── MEDIA INFO PANEL (Static) ── */
+.info-panel-static{background:var(--card);border-top:2px solid var(--blue);flex-shrink:0}
+.info-panel-hd{background:var(--bl);padding:9px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(26,79,174,.15)}
+.info-panel-title{font-size:13px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px}
+.info-tabs{display:flex;gap:4px;margin-left:auto}
+.itab{padding:4px 12px;font-size:12px;font-weight:500;color:var(--ink4);cursor:pointer;border-radius:var(--r);border:1px solid transparent;transition:.1s}
+.itab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.itab:hover:not(.on){color:var(--blue);background:rgba(26,79,174,.08)}
+.info-body{padding:14px 20px 16px;max-height:220px;overflow-y:auto}
+.info-section{display:none;font-size:12.5px;color:var(--ink3);line-height:1.85}
+.info-section.on{display:block}
+.compare-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
+.compare-table th{background:var(--bg);border:1px solid var(--b);padding:6px 10px;text-align:left;font-size:11px;color:var(--ink4);font-weight:600}
+.compare-table th:not(:first-child){text-align:center}
+.compare-table td{border:1px solid var(--b);padding:6px 10px;color:var(--ink3)}
+.compare-table td:not(:first-child){text-align:center}
+.compare-table tr:nth-child(even){background:var(--bg)}
+
+/* ── FOOTER ── */
+.footer{background:var(--nav);padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);flex-shrink:0}
+.footer-left{display:flex;align-items:center;gap:16px}
+.footer-info{display:flex;flex-direction:column;gap:1px}
+.footer-title{color:rgba(255,255,255,.85);font-weight:600;font-size:12px}
+.footer-desc{color:rgba(255,255,255,.45);font-size:10px}
+.footer-stats{display:flex;gap:12px}
+.stat-item{color:rgba(255,255,255,.6);font-size:10.5px}
+.stat-item strong{color:rgba(255,255,255,.9);font-weight:600}
+.footer-right{display:flex;align-items:center;gap:16px}
+.footer-tech{display:flex;gap:16px;align-items:center}
+.tech-section{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.tech-label{color:rgba(255,255,255,.5);font-size:9px;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+.f-tags{display:flex;gap:4px}
+.f-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 6px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4)}
+
+/* ── DROP OVERLAY ── */
+.drop-overlay{display:none;position:absolute;inset:0;background:rgba(26,79,174,.06);border:3px dashed var(--blue);z-index:50;align-items:center;justify-content:center;flex-direction:column;gap:8px;pointer-events:none}
+.drop-overlay.show{display:flex}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--ink2);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;opacity:0;transform:translateY(6px);transition:.22s;pointer-events:none;z-index:200}
+.toast.show{opacity:1;transform:translateY(0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<nav class="nav">
+  <span class="n-badge">대통령기록관</span>
+  <span class="n-title">제16대 대통령 말씀록 DB</span>
+  <span class="n-sub">노무현 대통령 2003-2007</span>
+  <div class="n-right">
+    <button class="n-btn" onclick="openImport()">↑ 파일 가져오기</button>
+    <span class="n-tag" id="nav-count">HTML 1 · XML 3</span>
+  </div>
+</nav>
+
+<div class="body">
+<aside class="sb">
+  <div class="sb-top"><div class="sb-top-t">e지원 기록 DB</div><div class="sb-top-s">참여정부 디지털 기록물</div></div>
+  <div class="sb-sec">
+    <div class="sb-h">유형</div>
+    <div class="sb-i on" onclick="F('type','all',this)"><span class="sb-nm">전체</span><span class="sb-ct" id="ct-all">4</span></div>
+    <div class="sb-i" onclick="F('type','편지',this)"><span class="sb-nm">편지·기고</span><span class="sb-ct" id="ct-html">1</span></div>
+    <div class="sb-i" onclick="F('type','XML',this)"><span class="sb-nm">XML 기록건</span><span class="sb-ct" id="ct-xml">3</span></div>
+    <div class="sb-i" onclick="F('type','말씀',this)"><span class="sb-nm">말씀·연설</span><span class="sb-ct" id="ct-malss">0</span></div>
+    <div class="sb-i" onclick="F('type','토론',this)"><span class="sb-nm">토론</span><span class="sb-ct" id="ct-toran">0</span></div>
+    <div class="sb-i" onclick="F('type','담화문',this)"><span class="sb-nm">담화문</span><span class="sb-ct" id="ct-damhwa">0</span></div>
+    <div class="sb-i" onclick="F('type','회의',this)"><span class="sb-nm">회의·문서관리</span><span class="sb-ct" id="ct-hoei">0</span></div>
+  </div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">
+    <div class="sb-h">연도</div>
+    <div class="sb-i" onclick="F('year','2003',this)"><span class="sb-nm">2003년</span><span class="sb-ct" id="ct-2003">1</span></div>
+    <div class="sb-i" onclick="F('year','2004',this)"><span class="sb-nm">2004년</span><span class="sb-ct" id="ct-2004">2</span></div>
+    <div class="sb-i" onclick="F('year','2007',this)"><span class="sb-nm">2007년</span><span class="sb-ct" id="ct-2007">1</span></div>
+  </div>
+  <div class="sb-div"></div>
+  <div class="sb-sec">
+    <div class="sb-h">인코딩</div>
+    <div class="enc-legend">
+      <div class="enc-row"><div class="enc-dot" style="background:var(--green)"></div><span id="enc-ok-label">정상 HTML (1건)</span></div>
+      <div class="enc-row"><div class="enc-dot" style="background:var(--purple)"></div><span id="enc-xml-label">XML UTF-8 (3건)</span></div>
+      <div class="enc-row"><div class="enc-dot" style="background:var(--teal)"></div><span id="enc-import-label">가져옴 (0건)</span></div>
+    </div>
+    <div style="padding:0 12px 8px;font-size:11px;color:var(--blue)">📂 화면에 파일을 드래그하면 바로 탑재됩니다</div>
+  </div>
+</aside>
+
+<div class="main" id="main-wrap" ondragover="mainDragOver(event)" ondragleave="mainDragLeave(event)" ondrop="mainDrop(event)">
+  <div class="drop-overlay" id="drop-overlay">
+    <div style="font-size:32px">📂</div>
+    <div style="font-size:15px;font-weight:600;color:var(--blue)">HTML · XML 파일을 여기에 놓으면 바로 탑재됩니다</div>
+    <div style="font-size:12px;color:var(--ink3)">여러 파일 동시 처리 · EUC-KR/UTF-8 자동 인식</div>
+  </div>
+
+  <div class="sbar">
+    <div class="srow">
+      <div class="sw"><span class="sic">◎</span><input class="si" id="q" placeholder="문서번호, 날짜, 주제, 결재경로로 검색…" oninput="render()"></div>
+      <button class="sbtn" onclick="render()">검색</button>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="QS('정부혁신')">정부혁신</span>
+      <span class="chip" onclick="QS('한일관계')">한일관계</span>
+      <span class="chip" onclick="QS('추경')">추경예산</span>
+      <span class="chip" onclick="QS('외국인고용')">외국인고용</span>
+      <span class="chip" onclick="QS('경로')">결재경로</span>
+      <span class="chip" onclick="QS('수보회의')">수보회의</span>
+      <span class="chip" onclick="QS('FTA')">FTA</span>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <span class="tb-label">전체 내보내기</span>
+    <button class="tbtn p" onclick="dlAll('json')">⬇ JSON</button>
+    <button class="tbtn" onclick="dlAll('md')">⬇ Markdown</button>
+    <button class="tbtn" onclick="dlAll('txt')">⬇ TXT</button>
+    <button class="tbtn" onclick="dlAll('csv')">⬇ CSV</button>
+    <span class="tb-sep">|</span>
+    <button class="tbtn green" onclick="openImport()">↑ 파일 가져오기</button>
+    <span class="tb-count" id="tb-count"></span>
+  </div>
+
+  <div class="sel-bar" id="sel-bar">
+    <span class="sel-count" id="sel-count">0건 선택됨</span>
+    <button class="sel-fmt" onclick="dlSel('json')">⬇ JSON</button>
+    <button class="sel-fmt" onclick="dlSel('md')">⬇ Markdown</button>
+    <button class="sel-fmt" onclick="dlSel('txt')">⬇ TXT</button>
+    <button class="sel-fmt" onclick="dlSel('csv')">⬇ CSV</button>
+    <button class="sel-clear" onclick="clearSel()">✕ 선택 해제</button>
+  </div>
+
+  <div class="rh">
+    <div class="rc" id="rc"></div>
+    <select class="rsort" id="sort" onchange="render()">
+      <option value="date-d">최신순</option>
+      <option value="date-a">날짜순</option>
+      <option value="size-d">크기 큰 순</option>
+    </select>
+  </div>
+  <div class="rlist" id="rlist"></div>
+</div>
+</div>
+
+<!-- MEDIA INFO PANEL (Always Visible) -->
+<div class="info-panel-static">
+  <div class="info-panel-hd">
+    <span class="info-panel-title">📋 매체·이관 정보</span>
+    <div class="info-tabs">
+      <div class="itab on" onclick="showITab('html',this)">📄 HTML</div>
+      <div class="itab" onclick="showITab('xml',this)">🗂 XML (RMS)</div>
+      <div class="itab" onclick="showITab('compare',this)">⚖ 비교표</div>
+    </div>
+  </div>
+  <div class="info-body">
+    <div class="info-section on" id="is-html">
+      <b style="color:var(--ink2)">매체 특성</b> — 텍스트 기반 마크업. 별도 뷰어 없이 브라우저만으로 재현. W3C 표준으로 1990년대 HTML도 현재 브라우저에서 정상 작동 — 가장 긴 하위 호환 이력.<br><br>
+      <b style="color:var(--ink2)">포함 내용</b> — 대통령 발언·서한·담화문 본문 + 메타데이터(날짜·분류·등록자). HWP 에디터 생성 HTML을 e지원 템플릿이 래핑한 구조.<br><br>
+      <b style="color:var(--ink2)">구조</b> — 상단 <code style="font-size:11px;background:var(--bg);padding:0 3px;border-radius:2px">.ct_01</code>: 제목·메타데이터 / 하단 BODY: 단락(P 태그). 인라인 CSS. 굴림·돋움체 선언.<br><br>
+      <b style="color:var(--ink2)">이관 유의사항</b><br>
+      ① charset=euc-kr 선언 — EUC-KR로 읽어야 함. UTF-8로 열면 한국어 깨짐<br>
+      ② <code style="font-size:11px;background:var(--bg);padding:0 3px">iconv -f EUC-KR -t UTF-8</code> 변환 후 U+FFFD 0개 검증 필수<br>
+      ③ charset 메타태그도 UTF-8로 교체해야 브라우저 정상 렌더링<br>
+      ④ 외부 리소스 없음 — 단일 파일 자급자족 구조
+    </div>
+    <div class="info-section" id="is-xml">
+      <b style="color:var(--ink2)">매체 특성</b> — 국가기록원 RMS 장기보존 표준. EncapsulatedObject 구조 — 메타데이터·본문·첨부(Base64)·전자서명을 단일 XML에 캡슐화. SHA-256 + GPKI 이중 서명으로 무결성 보증.<br><br>
+      <b style="color:var(--ink2)">포함 내용</b><br>
+      ① 객체 메타데이터: 기관·부서·생산자·날짜·보존기간·공개유형<br>
+      ② 문서관리카드(mmcContent): 보고 취지·문서구분·결재자<br>
+      ③ <b style="color:var(--ink)">결재경로(dmcPath)</b>: 담당자·날짜·의견·처리결과 — 의사결정 계층과 환류 과정의 핵심<br>
+      ④ 첨부파일(HWP·PDF·PPT): Base64 내장 — 별도 디코딩 필요<br>
+      ⑤ 전자서명: 기록관리비서관 + 서버 이중 서명<br><br>
+      <b style="color:var(--ink2)">결재경로의 의의</b> — e지원의 핵심. 비서관→수석→대통령(참조)→비서실장→수보회의→시행 계층이 타임스탬프와 함께 기록. 반환·재상신 이력 보존. 의사결정 흐름 재구성의 유일한 근거.<br><br>
+      <b style="color:var(--ink2)">이관 유의사항</b><br>
+      ① UTF-8 — 인코딩 문제 없음 ② DocumentData: Base64 첨부 — 별도 디코딩 필요<br>
+      ③ 전자서명: GPKI 의존 — 현재는 서명 값만 보존 ④ KDN 속성이 의미 표지 — tag명보다 KDN 우선 참조
+    </div>
+    <div class="info-section" id="is-compare">
+      <table class="compare-table">
+        <tr><th>항목</th><th style="color:var(--blue)">HTML</th><th style="color:var(--purple)">XML (RMS)</th></tr>
+        <tr><td>인코딩</td><td style="color:var(--amber)">EUC-KR ⚠</td><td style="color:var(--green)">UTF-8 ✓</td></tr>
+        <tr><td>뷰어</td><td>브라우저</td><td>텍스트 에디터</td></tr>
+        <tr><td>본문</td><td>발언·서한 전문</td><td>보고 취지·메모</td></tr>
+        <tr><td>결재경로</td><td style="color:var(--ink4)">없음</td><td style="color:var(--green)">✓ 핵심</td></tr>
+        <tr><td>첨부파일</td><td style="color:var(--ink4)">없음</td><td>Base64 내장</td></tr>
+        <tr><td>전자서명</td><td style="color:var(--ink4)">없음</td><td>SHA-256+GPKI</td></tr>
+        <tr><td>장기보존성</td><td style="color:var(--green)">◎ 웹 표준</td><td style="color:var(--green)">◎ ISO XML</td></tr>
+        <tr><td>텍스트 검색</td><td style="color:var(--green)">◎</td><td style="color:var(--green)">◎</td></tr>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-left">
+    <div class="footer-info">
+      <div class="footer-title">e지원 기록 DB</div>
+      <div class="footer-desc">노무현 대통령 참여정부 2003–2007</div>
+    </div>
+    <div class="footer-stats">
+      <span class="stat-item">HTML <strong>1건</strong></span>
+      <span class="stat-item">XML <strong>3건</strong></span>
+    </div>
+  </div>
+  <div class="footer-right">
+    <div class="footer-tech">
+      <div class="tech-section">
+        <span class="tech-label">포맷</span>
+        <div class="f-tags">
+          <span class="f-tag">HTML</span><span class="f-tag">XML</span>
+          <span class="f-tag">EUC-KR</span><span class="f-tag">UTF-8</span>
+        </div>
+      </div>
+      <div class="tech-section">
+        <span class="tech-label">시스템</span>
+        <div class="f-tags">
+          <span class="f-tag">e지원</span><span class="f-tag">RMS v1.1</span>
+          <span class="f-tag">GPKI</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- IMPORT MODAL -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeImport()">
+  <div class="modal">
+    <div class="modal-hd">
+      <h3>↑ 파일 가져오기</h3>
+      <button class="modal-close" onclick="closeImport()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--ink3);margin-bottom:14px">HTML·XML 파일을 직접 드래그하거나 추출기 JSON을 가져옵니다. 화면 어디에나 드래그해도 됩니다.</p>
+      <div class="sec-label"><span style="background:var(--gl);color:var(--green);font-size:9.5px;padding:1px 6px;border-radius:3px;font-weight:700">권장</span> ① HTML 파일 직접 가져오기</div>
+      <div class="drop-zone" ondragover="dz_over(event,this)" ondragleave="dz_leave(event,this)" ondrop="dropHTML(event)">
+        <input type="file" accept=".html,.htm" multiple onchange="importHTMLFiles(this.files)">
+        <div class="dz-hint">🗂 HTML 파일 드래그 또는 클릭</div>
+        <div class="dz-sub">e지원 .html · 여러 파일 동시 · EUC-KR 자동 인식</div>
+      </div>
+      <div class="sec-label">② XML 파일 직접 가져오기</div>
+      <div class="drop-zone" style="border-color:#6030B0;background:#F5F0FF" ondragover="dz_over(event,this)" ondragleave="dz_leave(event,this)" ondrop="dropXML(event)">
+        <input type="file" accept=".xml" multiple onchange="importXMLFiles(this.files)">
+        <div class="dz-hint" style="color:#6030B0">🗂 XML 파일 드래그 또는 클릭</div>
+        <div class="dz-sub">e지원 RMS .xml · 결재경로·첨부·메타데이터 자동 추출</div>
+      </div>
+      <div class="sec-label">③ JSON 가져오기 (추출기 출력물)</div>
+      <div class="drop-zone" ondragover="dz_over(event,this)" ondragleave="dz_leave(event,this)" ondrop="dropJSON(event)">
+        <input type="file" accept=".json" onchange="importFile(this.files)">
+        <div class="dz-hint">JSON 파일 드래그 또는 클릭</div>
+        <div class="dz-sub">추출기에서 저장한 .json · 전체 또는 개별</div>
+      </div>
+      <div style="margin-top:8px">
+        <div style="font-size:11.5px;font-weight:600;color:var(--ink4);margin-bottom:5px">또는 JSON 직접 붙여넣기</div>
+        <textarea id="json-paste" style="width:100%;height:70px;border:1px solid var(--b);border-radius:var(--r);padding:8px;font-family:var(--mono);font-size:11.5px;resize:vertical" placeholder='{"id":"...","title":"...","paragraphs":[]}'></textarea>
+        <button class="tbtn p" style="margin-top:6px;width:100%" onclick="importPaste()">가져오기</button>
+      </div>
+      <div class="import-status" id="import-status"></div>
+    </div>
+    <div class="modal-footer"><button class="tbtn" onclick="closeImport()">닫기</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══ DATA ═══
+const BASE = [
+{id:'2003101021100042100N',title:'제241회 임시국회 개회에 즈음한 대통령 대국회 서한',date:'2003.07.02',year:2003,type:'편지',kb:8.5,lines:28,fffd:0,enc_ok:true,
+tags:['편지','임시국회','추경예산','외국인고용','FTA','증권집단소송','경제회생','민생'],
+snip:'추경예산, 외국인고용허가제, 증권관련집단소송법, 한·칠레 FTA 비준 등 민생·경제 현안의 조속한 처리를 국회에 요청한 대통령 서한.',
+registrar:'한난숙',category:'편지·기고 > 편지',
+paragraphs:['존경하는 박관용 국회의장, 그리고 국회의원 여러분,','저는 제241회 임시국회 개회에 즈음하여 민생과 경제회생에 필요한 주요 법안과 추가경정예산안의 조속한 국회심의와 의결을 특별히 당부 드리고자 합니다.','잘 아시다시피 저와 참여정부는 지난 4개월간 우리나라를 둘러싼 안팎의 불안요소를 해소하고, 국정운영의 기본틀을 새롭게 마련하는데 온 힘을 기울여왔습니다.','한미간 긴밀한 공조와 신뢰구축을 통해 급박하게 몰아치던 북핵위기의 먹구름을 거둬냈습니다. 전 세계를 휩쓴 사스(SARS)의 공포에도 불구하고, 우리나라는 안전지대로 남았습니다. 국가신인도 하락의 우려가 해소되었고, 불안했던 금융시장도 정상화되었습니다.','이런 과정에서 이라크 파병 동의안과 철도개혁법안 통과 등 우리 국회가 보여준 협력과 지원이 큰 힘이 되었습니다. 다시한번 감사를 드립니다.','이제 침체된 국내경기를 진작시키고, 어려움을 겪고 있는 서민 생활을 보호하고 지원하는 일이 긴급한 과제입니다.','경제회생과 민생보호에는 정부와 국회, 여야가 따로 있을 수 없습니다. 그동안 여·야의 내부사정과 정치적 쟁점으로 인해 민생안정과 경제회생에 필요한 추경예산과 주요 법안에 대한 국회의 논의가 뒷전으로 밀렸습니다.','무엇보다 정부가 지난 6월 임시국회에 제출한 4조 1, 775억원 규모의 추경안을 국회가 조속히 통과시켜줄 것을 강력히 요청합니다. 추경안은 침체된 경기를 회생시키고 서민과 중산층의 생활을 안정시키기 위한 긴급대책입니다.','특히 추경예산은 투입시점을 놓치면 그 효과가 크게 저하된다는 점에서 국회의 특별한 배려를 요청합니다.','아시다시피 이번 추경안은 경기진작효과가 큰 사회간접자본 등 건설투자에 1조 5,374억원, 어려움을 겪고 있는 서민과 중산층을 지원하기 위해 6,585억원이 계상되었습니다.','또한 수출·중소기업을 지원하기 위해 5,901억원, 농가소득 보전과 농업기반시설투자에 3,857억원이 들어가게 됩니다. 또한 지방교부금등 지역경제 활성화를 위해 9,364 억원을 책정했습니다.','이번 추경안은 건전재정기조를 유지하기 위해 국채를 발행하지 않고, 연내집행 가능한 필수 사업만을 반영하였습니다.','이제 외국인고용허가제 도입은 더 이상 미룰 수 없습니다. 중소기업의 원활하고 합리적인 인력수급을 위해 합법적인 외국인력의 도입이 필요합니다. 코리안 드림을 안고 온 외국인 노동자를 범죄자로 몰아가서는 개방화시대, 인권국가로서 세계에 당당할 수 없습니다.','외국인 고용허가제가 도입되지 않을 경우 다음달 말까지 20여만명에 달하는 불법체류자의 강제출국조치가 불가피 합니다. 사회혼란과 중소기업의 인력난이 불을 보듯 뻔합니다.','정부는 단기적으로는 외국인 고용허가제를 산업연수생제도와 병행실시하기로 한 바 있습니다. 외국인 고용허가제 도입에 따른 부작용과 우려는 해소되었습니다. 더 이상 외국인 고용허가제를 미룰 이유가 없습니다.','경제체질개선과 투명성강화를 위해 증권관련집단소송제의 도입도 더 이상 미룰 수 없습니다.','최근 드러난 대기업의 분식회계 사태는 전체 경제에 큰 혼란과 불안을 가져왔습니다. 기업경영의 투명성 확보는 우리 경제의 국제경쟁력을 높이는 관건입니다.','세계는 지금 우리 경제가 글로벌 스텐다드에 걸맞게 체질을 개선할 수 있을지 주목하고 있습니다. 기업회계의 투명성을 높이고, 자의적인 기업경영의 폐단을 막기위해서 증권관련집단소송법안의 조속한 통과가 필요합니다.','여야정책협의회 등을 통해 도입에 따른 보완책도 충분히 논의된 만큼, 이번 임시국회에서 법률안의 통과가 이뤄져야 할 것입니다.','기업의 구조조정을 촉진하고, 양산된 개인신용불량자의 조속한 해소도 우리 경제와 민생의 긴급한 과제입니다. 채무자회생및파산에관한법률안은 부실기업의 효율적 처리를 통해 기업의 신속한 구조조정이 이뤄지도록 하고 있습니다. 또 신용불량자 가운데 정기적 수입이 있는 채무자에 대해서는 복잡한 파산절차에 따르지 않고서도 신속히 채무를 조정하여 경제활동이 정상화될 수 있도록 하고 있습니다.','한 · 칠레 FTA 비준은 개방경제에서 우리 경제가 살아남기 위한 불가피한 선택입니다. 세계각국이 글로벌 시대에 살아남기 위해 FTA를 체결하고 추진하는 현실속에서 우리나라만 예외가 될 수는 없습니다.','정부는 그동안 농업인등의 의견수렴과정에서 제시된 의견을 반영하여 종합대책안을 마련한 바 있습니다. 앞으로도 정부는 개방에 따른 충격을 최대한 줄이고, 농업의 새로운 활로를 개척할 수 있도록 최대한의 지원을 아끼지 않을 것입니다.','존경하는 국회의장, 국회의원 여러분!','국정의 반 이상은 국회의 몫입니다. 국회의 절대적인 협력이 필요합니다. 저는 국정의 동반자인 국회를 존중하고, 협력하는데 최선을 다하겠습니다.','아무쪼록 추경을 비롯하여 주요 민생·경제 법안에 대해 국회의 적극적인 협조를 당부드립니다.','감사합니다.','2003년 7월 2일','대통령 노무현']},
+];
+
+const XML_DOCS = [{"id":"1010146200711000000390000016","filename":"1010146200711000000390000016.xml","fmt":"xml","title":"<참여정부 4년 평가와 선진한국 발전전략> 책자 목차 및 구성초안 보고","date":"2007.02.05","year":2007,"org":"대통령비서실","dept":"국정홍보비서관실","registrar":"beseto","role":"국정홍보비서관","record_id":"101014620071100000039","type":"XML","keywords":"참여정부 평가, 선진한국, 국가발전전략, 경제, 민생, 양극화, 사회투자, 사회적 자본, 민주주의, 비전2030, 정부혁신","task":"국정홍보 전략기획 및 콘텐츠 개발","category":"대통령의 직무 수행 및 국가 정책의 효율적 수행을 위한 내부전략, 홍보전략, 여론파악 등에 관한 과제","open_time":"현대통령퇴임시","content":"대통령님께서 정리하신 <책 줄거리 구성초안>에 목차를 붙여 보고드림","attachments":[{"name":"대통령-책구성초안(보고)-070204.hwp","ext":"HWP","size":"163840"},{"name":"대통령 별지의견_20070204_책자 목차 구성 초안 관련.hwp","ext":"HWP"},{"name":"대통령 지시_20070204_책자 구성 초안.hwp","ext":"HWP"},{"name":"070205수보회의대통령말씀.hwp","ext":"HWP"}],"path":[{"step":1,"who":"국정홍보비서관실","user":"beseto","role":"국정홍보비서관","req_date":"2007.02.05 14:52","proc_date":"2007.02.05 14:57","status":"보고","opinion":"","result":"업무보고입니다","meeting":"","attached":"대통령-책구성초안(보고)-070204.hwp"},{"step":2,"who":"대통령","user":"mhroh","role":"대통령","req_date":"2007.02.05 14:57","proc_date":"2007.05.09 19:58","status":"참조","opinion":"","result":"","meeting":"","attached":""},{"step":3,"who":"제1부속실","user":"","role":"","req_date":"2007.02.05 14:57","proc_date":"","status":"참조","opinion":"","result":"","meeting":"","attached":""},{"step":4,"who":"(경로관리)","user":"","role":"","req_date":"2007.02.05 14:57","proc_date":"2007.02.05 14:59","status":"업무보고","opinion":"경로 수정을 위해 반환","result":"반환","meeting":"대통령주재수석보좌관회의","attached":""},{"step":5,"who":"국정홍보비서관실","user":"beseto","role":"국정홍보비서관","req_date":"2007.02.05 14:59","proc_date":"2007.02.05 15:07","status":"반환","opinion":"책자구성초안입니다.","result":"업무보고입니다","meeting":"","attached":""},{"step":6,"who":"홍보수석비서관실","user":"yoon673300","role":"홍보수석","req_date":"2007.02.05 15:07","proc_date":"2007.02.05 15:12","status":"업무보고","opinion":"수보회의 자료입니다.","result":"업무보고입니다","meeting":"","attached":""},{"step":7,"who":"대통령","user":"mhroh","role":"대통령","req_date":"2007.02.05 15:12","proc_date":"2007.05.09 19:58","status":"참조","opinion":"","result":"","meeting":"","attached":""},{"step":8,"who":"제1부속실","user":"","role":"","req_date":"2007.02.05 15:12","proc_date":"","status":"참조","opinion":"","result":"","meeting":"","attached":""},{"step":9,"who":"대통령비서실","user":"moonjaein","role":"비서실장","req_date":"2007.02.05 15:12","proc_date":"2007.07.20 14:35","status":"참조","opinion":"","result":"","meeting":"","attached":""},{"step":10,"who":"(경로관리)","user":"","role":"","req_date":"2007.02.05 15:12","proc_date":"2007.02.05 15:15","status":"업무보고","opinion":"지시카드 첨부를 위해 반환","result":"반환","meeting":"대통령주재수석보좌관회의","attached":""},{"step":11,"who":"국정홍보비서관실","user":"beseto","role":"국정홍보비서관","req_date":"2007.02.05 15:15","proc_date":"2007.02.05 15:19","status":"반환","opinion":"별첨 파일 첨부","result":"업무보고입니다","meeting":"","attached":""},{"step":12,"who":"대통령주재수석보좌관회의","user":"(수보회의)","role":"","req_date":"2007.02.05 15:19","proc_date":"2007.02.12 10:25","status":"업무보고","opinion":"이 구성 초안대로 글을 써서 월말까지 책을 만들어 봅시다 * 상세내용은 첨부 파일 참조","result":"시행","meeting":"대통령주재수석보좌관회의","attached":"070205수보회의대통령말씀.hwp"},{"step":13,"who":"국정홍보비서관실","user":"beseto","role":"국정홍보비서관","req_date":"2007.02.12 10:25","proc_date":"2007.02.12 10:33","status":"시행","opinion":"","result":"종료","meeting":"","attached":""}]},{"id":"1010184200411600000190000016","filename":"1010184200411600000190000016-문서관리카드를_이관.xml","fmt":"xml","title":"'갈등관리기본법 및 갈등관련 법·제도개선' 추진경과 및 계획","date":"2004.09.24","year":2004,"org":"대통령비서실","dept":"사회조정1비서관실","registrar":"sms28","role":"행정관","record_id":"101018420041160000019","type":"XML","keywords":"갈등관리, 갈등관리기본법, 법제도개선","task":"문서속성카드 임시시스템","category":"7. 기타 재임기간 중에 기록물 전체를 활용할 필요가 있는 대통령 기록물","open_time":"차기대통령퇴임시","content":"[문서구분] 일반보고서 / [최종결재자] 대통령 / [문서상태] 지시","president_opinion":"의견대로 시행 바람\n\n(시스템)1.문서 요지에 의견, 의사 결정의 단위와 절차를 간략히 기술 바람. 2. 지속위원회의 의사 결정을 거친 것이므로, 경로 의견은 위원회 \"이견 없음\" 보다는 문서내용이 의사 내용과 상위 없을 확인하는 뜻으로 \"확인\" 정도가 좋지 않을까요?","attachments":[{"name":"문서속성카드.hwp","ext":"HWP"},{"name":"갈등법_대통령님_보고.hwp","ext":"HWP","size":"14485"},{"name":"갈등관리기본법및제도개선VIP최종.ppt","ext":"PPT","size":"892053"}],"path":[]},{"id":"1010184200411600000210000016","filename":"1010184200411600000210000016-속성카드_작성방법_지시.xml","fmt":"xml","title":"몽양 여운형 독립유공자 포상 심의 관련 보고","date":"2004.08.11","year":2004,"org":"대통령비서실","dept":"사회조정1비서관실","registrar":"cjh323","role":"행정관","record_id":"101018420041160000021","type":"XML","keywords":"몽양, 여운형, 독립유공자, 포상, 심의","task":"보훈 정책 관리","category":"주요 정책, 의제 및 국정상황(현안)에 대한 조정·점검 등을 수행하는 과제","open_time":"차기대통령퇴임시","content":"몽양 여운형 독립유공자 포상 심의 관련 보고","attachments":[{"name":"20040811 몽양 여운형 독립유공자 포상 심의 관련 보고.pdf","ext":"PDF","size":"1852373"}],"path":[]}];
+
+let DOCS = BASE.map(d=>({...d,fmt:'html'}));
+XML_DOCS.forEach(x=>DOCS.push({...x,kb:+(x.attachments.reduce((s,a)=>s+(+a.size||0),0)/1024).toFixed(1),lines:x.path?x.path.length:0,fffd:0,enc_ok:true,tags:[String(x.year),'XML',x.dept,...(x.keywords||'').split(',').map(k=>k.trim()).filter(Boolean).slice(0,3)],snip:[x.content,x.task,x.keywords].filter(Boolean).join(' · ').slice(0,120),paragraphs:[]}));
+
+let expId=null, SEL=new Set(), ST={type:'all',year:'all',q:''};
+
+// SELECTION
+function toggleSel(id,cb){if(SEL.has(id))SEL.delete(id);else SEL.add(id);const el=document.getElementById('dc-'+id);if(el)el.classList.toggle('sel',SEL.has(id));updateSelBar();}
+function clearSel(){SEL.clear();document.querySelectorAll('.dc-cb').forEach(c=>c.checked=false);document.querySelectorAll('.dc').forEach(e=>e.classList.remove('sel'));updateSelBar();}
+function updateSelBar(){const b=document.getElementById('sel-bar');document.getElementById('sel-count').textContent=SEL.size+'건 선택됨';b.classList.toggle('on',SEL.size>0);}
+function dlSel(fmt){
+  const sel=DOCS.filter(d=>SEL.has(d.id));if(!sel.length){toast('선택된 항목이 없습니다');return;}
+  const isX=d=>d.fmt==='xml'||d.type==='XML';
+  if(fmt==='json')dlStr(JSON.stringify({count:sel.length,records:sel.map(d=>isX(d)?d:buildJSON(d))},null,2),'selected.json','application/json');
+  else if(fmt==='md')dlStr(sel.map(d=>isX(d)?buildXMLMD(d):buildMD(d)).join('\n\n---\n\n'),'selected.md','text/markdown');
+  else if(fmt==='txt')dlStr(sel.map(d=>isX(d)?buildXMLTxt(d):buildTXT(d)).join('\n\n\n'),'selected.txt','text/plain');
+  else if(fmt==='csv')dlStr(['id,title,date,type,year,fmt',...sel.map(d=>[d.id,`"${d.title}"`,d.date,d.type,d.year,d.fmt||'html'].join(','))].join('\n'),'selected.csv','text/csv');
+  toast('✓ '+sel.length+'건 내보내기 완료');
+}
+
+// MATCH
+function match(d){
+  if(ST.type!=='all'&&d.type!==ST.type)return false;
+  if(ST.year!=='all'&&String(d.year)!==ST.year)return false;
+  if(!ST.q)return true;
+  const q=ST.q.toLowerCase();
+  const p=(d.path||[]).map(p=>[p.who,p.role,p.opinion,p.result,p.meeting].filter(Boolean).join(' ')).join(' ');
+  return[d.title,d.date,String(d.year),d.type,d.id,(d.tags||[]).join(' '),d.snip||'',d.registrar||'',d.category||'',d.task||'',d.keywords||'',d.dept||'',d.content||'',(d.paragraphs||[]).join(' '),p].join(' ').toLowerCase().includes(q);
+}
+
+// HELPERS
+function badge(d){
+  if(d.fmt==='xml'||d.type==='XML')return`<span class="type-badge tb-xml">XML</span>`;
+  const m={말씀:'tb-malss 말씀',토론:'tb-toran 토론',담화문:'tb-damhwa 담화문',회의:'tb-hoei 회의',편지:'tb-pyenji 편지'};
+  const[cls,lbl]=(m[d.type]||'tb-malss 말씀').split(' ');return`<span class="type-badge ${cls}">${lbl}</span>`;
+}
+function encPill(d){
+  if(d.fmt==='xml'||d.type==='XML')return`<span class="enc-pill ep-xml">XML</span>`;
+  if(d._imported)return`<span class="enc-pill ep-import">가져옴</span>`;
+  if(d.enc_ok)return`<span class="enc-pill ep-ok">정상</span>`;
+  return`<span class="enc-pill ep-bad">손상</span>`;
+}
+function HL(t,q){if(!q||!t)return t||'';return String(t).replace(new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`,'gi'),'<span class="hl">$1</span>');}
+
+// XML CARD
+function renderXMLCard(d){
+  const stc=r=>!r?'ps-report':r.includes('반환')?'ps-return':r==='종료'?'ps-end':r==='시행'?'ps-exec':'ps-report';
+  const scc=p=>p.user==='mhroh'||p.user==='moonjaein'||p.who==='대통령'?'pf-president':p.result==='종료'?'pf-end-step':p.result==='반환'?'pf-return-step':p.result==='시행'?'pf-exec-step':'';
+  let h='<div class="xml-meta-grid">';
+  [['기관/부서',`${d.org||''}/${d.dept||''}`],['작성자',`${d.registrar||''} (${d.role||''})`],['업무 과제',d.task||''],['키워드',(d.keywords||'').slice(0,80)],['공개 시점',d.open_time||''],['기록건 ID',d.record_id||'']
+  ].forEach(([l,v])=>{if(v)h+=`<span class="xm-l">${l}</span><span class="xm-v">${v}</span>`;});
+  h+='</div>';
+  if(d.content)h+=`<div style="background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);padding:10px 12px;font-size:13px;color:var(--ink2);line-height:1.75;margin-bottom:10px">${d.content}</div>`;
+  if(d.president_opinion)h+=`<div class="president-opinion-box"><div class="pob-label">👑 대통령 의견</div><div class="pob-text">${d.president_opinion}</div></div>`;
+  if(d.attachments?.length){
+    h+=`<div style="margin:10px 0 6px;font-size:11px;font-weight:700;color:var(--ink4);letter-spacing:.06em;text-transform:uppercase">첨부 파일 (${d.attachments.length}건)</div>`;
+    const ic={'HWP':'📝','PDF':'📄','PPT':'📊','XLS':'📈'};
+    d.attachments.forEach(a=>h+=`<div class="attach-row"><span style="font-size:16px">${ic[a.ext]||'📎'}</span><span class="att-name">${a.name}</span><span style="font-size:10.5px;color:var(--ink4);font-family:var(--mono)">${a.ext}${a.size?' · '+Math.round(+a.size/1024)+'KB':''}</span></div>`);
+  }
+  if(d.path?.length){
+    h+=`<div class="path-header"><span class="ph-title">결재 경로</span><span class="ph-count">${d.path.length}단계</span><div class="ph-legend"><span><span class="leg-dot" style="background:#E5A800"></span>대통령/실장</span><span><span class="leg-dot" style="background:var(--red)"></span>반환</span><span><span class="leg-dot" style="background:var(--teal)"></span>시행</span></div></div><div class="path-flow">`;
+    d.path.forEach((p,i)=>{
+      const isPres=p.user==='mhroh'||p.who==='대통령'||p.user==='moonjaein';
+      const hasOp=p.opinion&&p.opinion.trim();const isKey=hasOp&&(p.result==='시행'||p.who.includes('수보'));
+      h+=`<div class="pf-step ${scc(p)}"><div class="pf-left"><div class="pf-circle">${p.step}</div>${i<d.path.length-1?'<div class="pf-line"></div>':''}</div><div class="pf-body"><div class="pf-who">${isPres?'👑 ':''}${p.who}${p.role?`<span style="font-size:10.5px;color:var(--ink4);font-weight:400">${p.role}</span>`:''} ${p.result?`<span class="pf-status ${stc(p.result)}">${p.result}</span>`:''} ${p.meeting?`<span class="pf-meeting">${p.meeting}</span>`:''}</div><div class="pf-date">${p.req_date||''}${p.proc_date&&p.proc_date!==p.req_date?' → '+p.proc_date:''}</div>${hasOp?`<div class="pf-opinion${isKey?' highlight':''}">${p.opinion}</div>`:''}${p.attached?`<div class="pf-attach">📎 ${p.attached}</div>`:''}</div></div>`;
+    });
+    h+='</div>';
+  } else h+=`<div style="margin-top:10px;padding:8px 12px;background:var(--bg);border:1px solid var(--b2);border-radius:var(--r);font-size:12px;color:var(--ink4)">경로 정보 없음 (직접 보고 또는 문서관리카드 유형)</div>`;
+  return h;
+}
+
+// RENDER
+function render(){
+  ST.q=document.getElementById('q').value.trim();
+  const q=ST.q;
+  let res=DOCS.filter(match);
+  const s=document.getElementById('sort').value;
+  res.sort((a,b)=>s==='date-a'?a.date.localeCompare(b.date):s==='size-d'?b.kb-a.kb:b.date.localeCompare(a.date));
+  const xc=DOCS.filter(d=>d.fmt==='xml'||d.type==='XML').length;
+  document.getElementById('nav-count').textContent=`HTML ${DOCS.length-xc} · XML ${xc}`;
+  document.getElementById('rc').innerHTML=`<strong>${res.length}건</strong> 검색됨${q?` <span class="qhl">"${q}"</span>`:''}`;
+  document.getElementById('tb-count').textContent=`${res.length}건`;
+  const sc=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  sc('ct-all',DOCS.length);sc('ct-html',DOCS.filter(d=>d.type==='편지').length);sc('ct-xml',xc);
+  sc('ct-malss',DOCS.filter(d=>d.type==='말씀').length);sc('ct-toran',DOCS.filter(d=>d.type==='토론').length);
+  sc('ct-damhwa',DOCS.filter(d=>d.type==='담화문').length);sc('ct-hoei',DOCS.filter(d=>d.type==='회의').length);
+  ['2003','2004','2005','2006','2007'].forEach(y=>sc('ct-'+y,DOCS.filter(d=>String(d.year)===y).length));
+  const imp=DOCS.filter(d=>d._imported&&d.fmt!=='xml').length;
+  const okN=DOCS.filter(d=>d.fmt!=='xml'&&d.enc_ok&&!d._imported).length;
+  const e1=document.getElementById('enc-ok-label');if(e1)e1.textContent=`정상 HTML (${okN}건)`;
+  const e2=document.getElementById('enc-xml-label');if(e2)e2.textContent=`XML UTF-8 (${xc}건)`;
+  const e3=document.getElementById('enc-import-label');if(e3)e3.textContent=`가져옴 (${imp}건)`;
+  if(!res.length){document.getElementById('rlist').innerHTML=`<div style="text-align:center;padding:48px;color:var(--ink4)"><p style="font-size:15px;margin-bottom:6px">결과 없음</p><p>다른 키워드를 시도해 보세요.</p></div>`;return;}
+  document.getElementById('rlist').innerHTML=res.map(d=>{
+    const exp=expId===d.id,isX=d.fmt==='xml'||d.type==='XML',hasC=d.paragraphs&&d.paragraphs.length>0;
+    const body=isX?renderXMLCard(d):hasC?d.paragraphs.map(p=>p.match(/^\d{4}년\s*\d+월\s*\d+일/)||p==='대통령 노무현'?`<p class="center-p">${p}</p>`:`<p>${HL(p,q)}</p>`).join(''):`<div class="no-content">⚠ 원본 EUC-KR 파일을 가져오기 하세요.</div>`;
+    return `<div class="dc${exp?' exp':''}${SEL.has(d.id)?' sel':''}" id="dc-${d.id}"><div class="dc-row"><input type="checkbox" class="dc-cb" ${SEL.has(d.id)?'checked':''} onclick="event.stopPropagation();toggleSel('${d.id}',this)"><div class="dc-content" onclick="toggle('${d.id}')"><div class="dc-top">${badge(d)}<div class="dc-title">${HL(d.title,q)}${encPill(d)}</div></div><div class="dc-meta"><span class="dc-id">${d.id}</span><span>📅 ${d.date}</span><span>📄 ${d.kb||0}KB · ${(d.lines||0)}${isX?'단계':'행'}</span>${hasC&&!isX?`<span style="color:var(--green)">✓ ${(d.paragraphs||[]).join('').length.toLocaleString()}자</span>`:''}</div><div class="dc-tags">${(d.tags||[]).map(t=>`<span class="dc-tag">${HL(t,q)}</span>`).join('')}</div><div class="dc-snip">${HL(d.snip||'',q)}</div><div class="dc-more">${exp?'▲ 접기':'▼ 상세 보기'}</div><div class="dc-det"><div class="dg"><span class="dl">문서 ID</span><span class="dv" style="font-family:var(--mono);font-size:10.5px">${d.id}</span><span class="dl">날짜</span><span class="dv">${d.date}</span>${d.registrar?`<span class="dl">등록자</span><span class="dv">${d.registrar}</span>`:''} ${d.category?`<span class="dl">분류</span><span class="dv">${d.category}</span>`:''}</div><div class="${isX?'':'body-area'}">${body}</div><div class="det-acts">${hasC||isX?`<button class="act p" onclick="event.stopPropagation();dlOne('txt','${d.id}')">⬇ TXT</button><button class="act" onclick="event.stopPropagation();dlOne('json','${d.id}')">⬇ JSON</button><button class="act" onclick="event.stopPropagation();dlOne('md','${d.id}')">⬇ MD</button><button class="act" onclick="event.stopPropagation();copyOne('${d.id}')">⎘ 복사</button>`:''}</div></div></div></div></div>`;
+  }).join('');
+}
+
+function toggle(id){expId=expId===id?null:id;render();if(expId)setTimeout(()=>document.getElementById('dc-'+id)?.scrollIntoView({behavior:'smooth',block:'nearest'}),40);}
+function F(k,v,el){ST[k]=v;el.closest('.sb-sec').querySelectorAll('.sb-i').forEach(i=>i.classList.remove('on'));el.classList.add('on');render();}
+function QS(t){document.getElementById('q').value=t;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));event.target.classList.add('on');render();}
+
+// DRAG
+function mainDragOver(e){if([...e.dataTransfer.items].some(i=>i.kind==='file')){e.preventDefault();document.getElementById('drop-overlay').classList.add('show');}}
+function mainDragLeave(e){if(!e.currentTarget.contains(e.relatedTarget))document.getElementById('drop-overlay').classList.remove('show');}
+function mainDrop(e){e.preventDefault();document.getElementById('drop-overlay').classList.remove('show');const all=[...e.dataTransfer.files];const html=all.filter(f=>f.name.match(/\.html?$/i));const xml=all.filter(f=>f.name.match(/\.xml$/i));if(html.length)importHTMLFiles(html);if(xml.length)importXMLFiles(xml);}
+function dz_over(e,el){e.preventDefault();el.classList.add('dragging');}
+function dz_leave(e,el){el.classList.remove('dragging');}
+
+// HTML IMPORT
+function importHTMLFiles(files){
+  if(!files||!files.length)return;
+  const arr=[...files];showIS('ok','처리 중... '+arr.length+'개');
+  let done=0,merged=0,added=0;
+  arr.forEach(file=>{
+    const r=new FileReader();
+    r.onload=e=>{
+      try{const rec=extractHTMLRecord(e.target.result,file.name);const rv=mergeRecord(rec);merged+=rv.merged;added+=rv.added;}catch(ex){console.warn(file.name,ex);}
+      if(++done===arr.length){const msg=`✓ HTML ${done}개 — ${merged}건 업데이트 · ${added}건 신규`;showIS('ok',msg);toast(msg);render();setTimeout(closeImport,1600);}
+    };r.readAsArrayBuffer(file);
+  });
+}
+function dropHTML(e){e.preventDefault();importHTMLFiles(e.dataTransfer.files);}
+function extractHTMLRecord(buf,filename){
+  const bytes=new Uint8Array(buf);let fffd=0;
+  for(let i=0;i<bytes.length-2;i++)if(bytes[i]===0xef&&bytes[i+1]===0xbf&&bytes[i+2]===0xbd)fffd++;
+  let bestTxt='',bestEnc='',bestKor=0;
+  ['euc-kr','utf-8','cp949'].forEach(enc=>{try{const t=new TextDecoder(enc,{fatal:false}).decode(bytes);const k=(t.match(/[\uAC00-\uD7A3]/g)||[]).length;if(k>bestKor){bestKor=k;bestTxt=t;bestEnc=enc;}}catch(e){}});
+  const dp=new DOMParser();const doc=dp.parseFromString(bestTxt,'text/html');
+  let title='(제목 없음)';const ct01=doc.querySelector('.ct_01');
+  if(ct01){const tds=ct01.querySelectorAll('td');for(const td of tds){const t=td.textContent.trim().split('\n')[0].trim();if(t&&t.length>5){title=t;break;}}}
+  if(title==='(제목 없음)'&&doc.title)title=doc.title;
+  let date='',registrar='',category='';
+  const uls=doc.querySelectorAll('.ct_02 ul');
+  if(uls.length>=2){const lb=[...uls[0].querySelectorAll('li')].map(l=>l.textContent.trim());const vl=[...uls[1].querySelectorAll('li')].map(l=>l.textContent.trim().replace(/^[-\s]*/,''));lb.forEach((l,i)=>{const v=vl[i]||'';if(l.includes('일시')||l.includes('날짜'))date=v.trim();if(l.includes('등록'))registrar=v.trim();if(l.includes('분류'))category=v.trim();});}
+  if(!date){const m=doc.body?.textContent?.match(/(\d{4}[.\-]\d{2}[.\-]\d{2})/);if(m)date=m[1];}
+  const paras=[];doc.querySelectorAll('p,P').forEach(p=>{const t=p.textContent.replace(/\s+/g,' ').replace(/\u00A0/g,' ').trim();if(t&&t.length>1)paras.push(t);});
+  const ded=paras.filter((p,i)=>i===0||p!==paras[i-1]);
+  const id=filename.replace(/\.html?$/i,'').replace(/[()]/g,'_');
+  return{id,filename,fmt:'html',title,date,registrar,category,enc_ok:bestKor>50,enc_used:bestEnc,fffd,korean_chars:bestKor,paragraphs:ded,char_count:ded.join('').length,year:parseInt(date)||0,_imported:true,snip:ded.slice(0,2).join(' ').slice(0,120)+(ded.length?'…':'')};
+}
+function mergeRecord(rec){
+  const stem=rec.id.split('__')[0];const idx=DOCS.findIndex(d=>d.id===rec.id||d.id.startsWith(stem));
+  const patch={paragraphs:rec.paragraphs,_imported:true,enc_ok:rec.enc_ok||rec.korean_chars>50,fffd:rec.fffd,snip:rec.snip};
+  if(rec.title&&rec.title!=='(제목 없음)')patch.title=rec.title;if(rec.date)patch.date=rec.date;if(rec.registrar)patch.registrar=rec.registrar;if(rec.category)patch.category=rec.category;
+  if(idx>=0){Object.assign(DOCS[idx],patch);return{merged:1,added:0};}
+  DOCS.push({...rec,...patch,type:rec.type||guessType(rec),kb:0,lines:rec.paragraphs.length,tags:guessTags(rec)});return{merged:0,added:1};
+}
+function guessType(rec){const t=(rec.category||'').toLowerCase();if(t.includes('담화'))return '담화문';if(t.includes('편지')||t.includes('기고'))return '편지';if(t.includes('회의')||rec.title?.includes('회의'))return '회의';return '말씀';}
+function guessTags(rec){return[String(rec.year||''),'말씀'].filter(Boolean);}
+
+// XML IMPORT
+function importXMLFiles(files){
+  if(!files||!files.length)return;const arr=[...files].filter(f=>f.name.match(/\.xml$/i));if(!arr.length)return;
+  showIS('ok','XML 처리 중... '+arr.length+'개');let done=0,merged=0,added=0;
+  arr.forEach(file=>{const r=new FileReader();r.onload=e=>{try{const recs=parseXMLFile(e.target.result,file.name);recs.forEach(rec=>{const rv=mergeRecord(rec);merged+=rv.merged;added+=rv.added;});}catch(ex){console.warn('XML:',file.name,ex);}if(++done===arr.length){const msg=`✓ XML ${done}개 — ${merged}건 업데이트 · ${added}건 신규`;showIS('ok',msg);toast(msg);render();setTimeout(closeImport,1600);}};r.readAsText(file,'utf-8');});
+}
+function dropXML(e){e.preventDefault();importXMLFiles(e.dataTransfer.files);}
+function parseXMLFile(xmlText,filename){
+  const dp=new DOMParser();const xd=dp.parseFromString(xmlText,'application/xml');if(xd.querySelector('parsererror'))throw new Error('XML parse failed');
+  function byTag(name){const els=[...xd.getElementsByTagName(name)];for(const el of els){const t=(el.textContent||'').trim();if(t&&!t.startsWith('MIIF')&&!t.startsWith('MC4')&&!t.startsWith('0M8R'))return t;}return '';}
+  const title=byTag('TitleInfoName')||byTag('dmcTitle')||'(제목 없음)';
+  const dn=(byTag('ProduceDate')||byTag('ObjectCreationDate')||'').replace(/[^0-9]/g,'');
+  const date=dn.length>=8?`${dn.slice(0,4)}.${dn.slice(4,6)}.${dn.slice(6,8)}`:'';
+  const content=(byTag('mmcContent')||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()||byTag('dmcFormatedText')||'';
+  const presOp=byTag('mmcReceiptorContent')||'';
+  const seen=new Set();const attachments=[];
+  [...xd.getElementsByTagName('DocFileName')].forEach((fn,i)=>{const name=(fn.textContent||'').trim();if(name&&!seen.has(name)){seen.add(name);const ext=name.split('.').pop().toUpperCase();const sz=xd.getElementsByTagName('Size')[i]?.textContent?.trim()||'';attachments.push({name,ext,size:sz});}});
+  const fmtD=s=>{const n=s.replace(/[^0-9]/g,'');return n.length>=12?`${n.slice(0,4)}.${n.slice(4,6)}.${n.slice(6,8)} ${n.slice(8,10)}:${n.slice(10,12)}`:s;};
+  const path=[...xd.getElementsByTagName('dmcPath')].map((p,i)=>{function pv(t){return([...p.getElementsByTagName(t)][0]?.textContent||'').trim();}const who=pv('DeptName')||pv('UserID')||'';return who||pv('dmcPathOpinionContent')?{step:i+1,who,user:pv('UserID'),role:pv('Title'),req_date:fmtD(pv('dmcPathReqDate')),proc_date:fmtD(pv('dmcPathProcessingDate')),status:pv('dmcPathReqStatus'),opinion:pv('dmcPathOpinionContent'),result:pv('dmcPathProcessingResult'),meeting:pv('DmcPathConferenceName'),attached:pv('DocFileName')}:null;}).filter(Boolean);
+  const id=byTag('RecordID')||filename.replace('.xml','');const keywords=byTag('Keyword1')||byTag('dmcSearchKeyword')||'';const dept=byTag('DeptName')||'';const year=parseInt(date)||0;
+  return [{id,filename,fmt:'xml',title,date,year,org:byTag('OrgName')||'대통령비서실',dept,registrar:byTag('UserID')||'',role:byTag('Title')||'',record_id:id,type:'XML',task:byTag('dmcTaskName')||'',keywords,category:byTag('BackgroundInfo')||'',open_time:byTag('OpenTime')||'',content,president_opinion:presOp,attachments,path,kb:+(attachments.reduce((s,a)=>s+(+a.size||0),0)/1024).toFixed(1),lines:path.length,fffd:0,enc_ok:true,tags:[String(year),'XML',dept,...keywords.split(',').map(k=>k.trim()).filter(Boolean).slice(0,3)].filter(Boolean),snip:[content,byTag('dmcTaskName'),keywords].filter(Boolean).join(' · ').slice(0,120),paragraphs:[],_imported:true}];
+}
+
+// JSON IMPORT
+function importFile(files){if(!files||!files.length)return;const r=new FileReader();r.onload=e=>{try{processImport(JSON.parse(e.target.result));}catch(err){showIS('err','JSON 파싱 실패: '+err.message);}};r.readAsText(files[0]);}
+function dropJSON(e){e.preventDefault();importFile(e.dataTransfer.files);}
+function importPaste(){const txt=document.getElementById('json-paste').value.trim();if(!txt){showIS('err','내용을 입력해 주세요.');return;}try{processImport(JSON.parse(txt));}catch(err){showIS('err','JSON 파싱 실패: '+err.message);}}
+function processImport(data){
+  let records=Array.isArray(data)?data:data.records?data.records:data.id?[data]:null;
+  if(!records){showIS('err','인식할 수 없는 형식입니다.');return;}
+  let merged=0,added=0;
+  records.forEach(rec=>{if(!rec.id||!rec.title)return;const paras=rec.paragraphs||(rec.body&&rec.body.paragraphs)||[];const patch={paragraphs:paras,_imported:true,enc_ok:true,fffd:0,snip:paras.slice(0,2).join(' ').slice(0,120)+(paras.length?'…':'')};if(rec.title)patch.title=rec.title;if(rec.date)patch.date=rec.date;if(rec.registrar)patch.registrar=rec.registrar;const idx=DOCS.findIndex(d=>d.id===rec.id);if(idx>=0){Object.assign(DOCS[idx],patch);merged++;}else{DOCS.push({...rec,...patch,year:rec.year||+rec.date?.slice(0,4)||0,kb:rec.kb||0,lines:paras.length,type:rec.type||'말씀',tags:rec.tags||[],fmt:rec.fmt||'html'});added++;}});
+  const msg=`✓ ${merged}건 업데이트 · ${added}건 신규`;showIS('ok',msg);toast(msg);render();setTimeout(closeImport,1600);
+}
+
+// DOWNLOADS
+function buildTXT(d){return['═══════════════════════════════════════════════','제16대 대통령 말씀록 DB — e지원 기록물','═══════════════════════════════════════════════',`제목: ${d.title}`,`날짜: ${d.date} | 유형: ${d.type} | ID: ${d.id}`,d.registrar?`등록자: ${d.registrar}`:'',d.category?`분류: ${d.category}`:'','───────────────────────────────────────────────','',...(d.paragraphs||[]).flatMap(p=>[p,'']),'───────────────────────────────────────────────',`출처: e지원 · 노무현 대통령 참여정부`,`추출: ${new Date().toLocaleString('ko-KR')}`].filter(l=>l!=='').join('\n');}
+function buildXMLTxt(d){const l=['═══════════════════════════════════════════════','e지원 RMS XML — 기록건','═══════════════════════════════════════════════',`제목: ${d.title}`,`날짜: ${d.date} | ${d.org} / ${d.dept}`,`ID: ${d.record_id}`,`과제: ${d.task||''}`,`키워드: ${d.keywords||''}`,d.open_time?`공개시점: ${d.open_time}`:'','───────────────────────────────────────────────'];if(d.content){l.push('▶ 내용',d.content,'');}if(d.president_opinion){l.push('▶ 대통령 의견',d.president_opinion,'');}if(d.attachments?.length){l.push('▶ 첨부');d.attachments.forEach(a=>l.push(`  · ${a.name}${a.size?' ('+Math.round(+a.size/1024)+'KB)':''}`));l.push('');}if(d.path?.length){l.push(`▶ 결재 경로 (${d.path.length}단계)`);d.path.forEach(p=>{l.push(`  [${p.step}] ${p.who}${p.role?' ('+p.role+')':''} ${p.req_date||''}`);if(p.opinion)l.push(`      💬 ${p.opinion}`);if(p.result)l.push(`      → ${p.result}`);if(p.meeting)l.push(`      📅 ${p.meeting}`);});}l.push('───────────────────────────────────────────────','출처: e지원 RMS v1.1 · 노무현 대통령 참여정부');return l.filter(x=>x!=='').join('\n');}
+function buildMD(d){const l=[`# ${d.title}`,'','## 문서 정보','| 항목 | 내용 |','|------|------|',`| ID | \`${d.id}\` |`,`| 날짜 | ${d.date} |`,`| 유형 | ${d.type} |`];if(d.registrar)l.push(`| 등록자 | ${d.registrar} |`);if(d.category)l.push(`| 분류 | ${d.category} |`);l.push('');if((d.paragraphs||[]).length){l.push('## 본문','');(d.paragraphs).forEach(p=>{l.push(p);l.push('');});}l.push('---',`> e지원 · 노무현 대통령 참여정부 · ${new Date().toLocaleDateString('ko-KR')}`);return l.join('\n');}
+function buildXMLMD(d){const l=[`# ${d.title}`,'','## 기본 정보','| 항목 | 내용 |','|------|------|',`| ID | \`${d.record_id}\` |`,`| 날짜 | ${d.date} |`,`| 기관 | ${d.org} / ${d.dept} |`,`| 작성자 | ${d.registrar} (${d.role}) |`];if(d.task)l.push(`| 과제 | ${d.task} |`);if(d.keywords)l.push(`| 키워드 | ${d.keywords} |`);if(d.open_time)l.push(`| 공개시점 | ${d.open_time} |`);l.push('');if(d.content){l.push('## 문서 내용','',d.content,'');}if(d.president_opinion){l.push('## 👑 대통령 의견','',d.president_opinion,'');}if(d.attachments?.length){l.push('## 첨부 파일','');d.attachments.forEach(a=>l.push(`- \`${a.name}\`${a.size?' ('+Math.round(+a.size/1024)+'KB)':''}`));l.push('');}if(d.path?.length){l.push(`## 결재 경로 (${d.path.length}단계)`,'',(d.path.map(p=>{const pr=p.user==='mhroh'||p.who==='대통령'||p.user==='moonjaein'?'👑 ':'';return[`**[${p.step}단계]** ${pr}${p.who}${p.role?' ('+p.role+')':''}${p.req_date?' · '+p.req_date:''}`,p.opinion?`> ${p.opinion}`:'',p.result?`→ **${p.result}**`:'',p.meeting?`📅 ${p.meeting}`:'',''].filter(x=>x!=='').join('\n');})).join('\n'));}l.push('---','> e지원 RMS XML · 노무현 대통령 참여정부');return l.join('\n');}
+function buildJSON(d){return{id:d.id,title:d.title,date:d.date,type:d.type,year:d.year,registrar:d.registrar||'',category:d.category||'',tags:d.tags,enc_ok:d.enc_ok||d._imported||false,body:{paragraphs:d.paragraphs||[],full_text:(d.paragraphs||[]).join('\n\n')},source:'e지원',president:'노무현',extracted_at:new Date().toISOString()};}
+function dlStr(c,n,m){const a=document.createElement('a');a.href='data:'+m+';charset=utf-8,'+encodeURIComponent(c);a.download=n;a.click();}
+function dlOne(fmt,id){const d=DOCS.find(x=>x.id===id);if(!d)return;const isX=d.fmt==='xml'||d.type==='XML';if(fmt==='txt')dlStr(isX?buildXMLTxt(d):buildTXT(d),id+'.txt','text/plain');else if(fmt==='json')dlStr(JSON.stringify(isX?d:buildJSON(d),null,2),id+'.json','application/json');else if(fmt==='md')dlStr(isX?buildXMLMD(d):buildMD(d),id+'.md','text/markdown');}
+function copyOne(id){const d=DOCS.find(x=>x.id===id);if(!d)return;const isX=d.fmt==='xml'||d.type==='XML';navigator.clipboard.writeText(isX?buildXMLTxt(d):buildTXT(d)).then(()=>toast('복사됨'));}
+function dlAll(fmt){const res=DOCS.filter(match);const isX=d=>d.fmt==='xml'||d.type==='XML';if(fmt==='json')dlStr(JSON.stringify({total:res.length,records:res.map(d=>isX(d)?d:buildJSON(d))},null,2),'ejiwon_all.json','application/json');else if(fmt==='md')dlStr(res.map(d=>isX(d)?buildXMLMD(d):buildMD(d)).join('\n\n---\n\n'),'ejiwon_all.md','text/markdown');else if(fmt==='txt')dlStr(res.map(d=>isX(d)?buildXMLTxt(d):buildTXT(d)).join('\n\n\n'),'ejiwon_all.txt','text/plain');else if(fmt==='csv')dlStr(['id,title,date,type,year,fmt',...res.map(d=>[d.id,`"${d.title}"`,d.date,d.type,d.year,d.fmt||'html'].join(','))].join('\n'),'ejiwon_all.csv','text/csv');}
+
+// MODAL
+function openImport(){document.getElementById('modal').classList.add('open');}
+function closeImport(){document.getElementById('modal').classList.remove('open');}
+function showIS(type,msg){const el=document.getElementById('import-status');el.className='import-status is-'+(type==='err'?'err':'ok');el.textContent=msg;}
+
+// INFO PANEL TABS
+function showITab(id,el){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('on'));el.classList.add('on');document.getElementById('is-'+id)?.classList.add('on');}
+
+// TOAST
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+
+render();
+</script>
+</body>
+</html>
