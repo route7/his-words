@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -182,15 +183,17 @@ button,input,select,textarea{font-family:var(--sans)}
 .is-ok{background:var(--gl);color:var(--green);display:block}
 .is-err{background:var(--rl);color:var(--red);display:block}
 
-/* ── MEDIA INFO PANEL (Static) ── */
-.info-panel-static{background:var(--card);border-top:2px solid var(--blue);flex-shrink:0}
+/* ── MEDIA INFO PANEL (Toggle Mode) ── */
+.info-panel{display:none;background:var(--card);border-top:2px solid var(--blue);flex-shrink:0}
+.info-panel.open{display:flex;flex-direction:column}
 .info-panel-hd{background:var(--bl);padding:9px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(26,79,174,.15)}
 .info-panel-title{font-size:13px;font-weight:600;color:var(--blue);display:flex;align-items:center;gap:6px}
 .info-tabs{display:flex;gap:4px;margin-left:auto}
 .itab{padding:4px 12px;font-size:12px;font-weight:500;color:var(--ink4);cursor:pointer;border-radius:var(--r);border:1px solid transparent;transition:.1s}
 .itab.on{background:var(--blue);color:#fff;border-color:var(--blue)}
 .itab:hover:not(.on){color:var(--blue);background:rgba(26,79,174,.08)}
-.info-body{padding:14px 20px 16px;max-height:220px;overflow-y:auto}
+.info-close{margin-left:8px;background:none;border:1px solid rgba(26,79,174,.25);color:var(--blue);border-radius:var(--r);padding:3px 8px;cursor:pointer;font-size:11.5px}
+.info-body{padding:14px 20px 16px;overflow-y:auto;max-height:240px}
 .info-section{display:none;font-size:12.5px;color:var(--ink3);line-height:1.85}
 .info-section.on{display:block}
 .compare-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:4px}
@@ -200,19 +203,20 @@ button,input,select,textarea{font-family:var(--sans)}
 .compare-table td:not(:first-child){text-align:center}
 .compare-table tr:nth-child(even){background:var(--bg)}
 
-/* ── FOOTER ── */
+/* ── FOOTER (3-Split Layout) ── */
 .footer{background:var(--nav);padding:0 20px;height:50px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.35);flex-shrink:0}
-.footer-left{display:flex;align-items:center;gap:16px}
+.footer-left{display:flex;align-items:center;gap:16px;flex:1}
 .footer-info{display:flex;flex-direction:column;gap:1px}
 .footer-title{color:rgba(255,255,255,.85);font-weight:600;font-size:12px}
 .footer-desc{color:rgba(255,255,255,.45);font-size:10px}
 .footer-stats{display:flex;gap:12px}
 .stat-item{color:rgba(255,255,255,.6);font-size:10.5px}
 .stat-item strong{color:rgba(255,255,255,.9);font-weight:600}
-.footer-right{display:flex;align-items:center;gap:16px}
-.footer-tech{display:flex;gap:16px;align-items:center}
-.tech-section{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
-.tech-label{color:rgba(255,255,255,.5);font-size:9px;letter-spacing:.05em;text-transform:uppercase;font-weight:600}
+.footer-center{display:flex;justify-content:center;flex:0 0 auto}
+.info-toggle-btn{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);color:rgba(255,255,255,.8);border-radius:var(--r);padding:6px 16px;cursor:pointer;font-size:12px;font-weight:500;transition:.15s;letter-spacing:.01em}
+.info-toggle-btn:hover{background:rgba(255,255,255,.16);color:#fff;border-color:rgba(255,255,255,.35)}
+.info-toggle-btn.active{background:var(--blue);border-color:var(--blue);color:#fff}
+.footer-right{display:flex;justify-content:flex-end;flex:1}
 .f-tags{display:flex;gap:4px}
 .f-tag{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:3px;padding:1px 6px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4)}
 
@@ -325,8 +329,8 @@ button,input,select,textarea{font-family:var(--sans)}
 </div>
 </div>
 
-<!-- MEDIA INFO PANEL (Always Visible) -->
-<div class="info-panel-static">
+<!-- MEDIA INFO PANEL (Toggle Mode) -->
+<div class="info-panel" id="info-panel">
   <div class="info-panel-hd">
     <span class="info-panel-title">📋 매체·이관 정보</span>
     <div class="info-tabs">
@@ -334,6 +338,7 @@ button,input,select,textarea{font-family:var(--sans)}
       <div class="itab" onclick="showITab('xml',this)">🗂 XML (RMS)</div>
       <div class="itab" onclick="showITab('compare',this)">⚖ 비교표</div>
     </div>
+    <button class="info-close" onclick="toggleInfo()">✕ 닫기</button>
   </div>
   <div class="info-body">
     <div class="info-section on" id="is-html">
@@ -387,22 +392,15 @@ button,input,select,textarea{font-family:var(--sans)}
       <span class="stat-item">XML <strong>3건</strong></span>
     </div>
   </div>
+  <div class="footer-center">
+    <button class="info-toggle-btn" id="info-btn" onclick="toggleInfo()">📋 매체·이관 정보</button>
+  </div>
   <div class="footer-right">
-    <div class="footer-tech">
-      <div class="tech-section">
-        <span class="tech-label">포맷</span>
-        <div class="f-tags">
-          <span class="f-tag">HTML</span><span class="f-tag">XML</span>
-          <span class="f-tag">EUC-KR</span><span class="f-tag">UTF-8</span>
-        </div>
-      </div>
-      <div class="tech-section">
-        <span class="tech-label">시스템</span>
-        <div class="f-tags">
-          <span class="f-tag">e지원</span><span class="f-tag">RMS v1.1</span>
-          <span class="f-tag">GPKI</span>
-        </div>
-      </div>
+    <div class="f-tags">
+      <span class="f-tag">HTML</span><span class="f-tag">XML</span>
+      <span class="f-tag">EUC-KR</span><span class="f-tag">UTF-8</span>
+      <span class="f-tag">e지원</span><span class="f-tag">RMS v1.1</span>
+      <span class="f-tag">GPKI</span>
     </div>
   </div>
 </div>
@@ -662,7 +660,8 @@ function openImport(){document.getElementById('modal').classList.add('open');}
 function closeImport(){document.getElementById('modal').classList.remove('open');}
 function showIS(type,msg){const el=document.getElementById('import-status');el.className='import-status is-'+(type==='err'?'err':'ok');el.textContent=msg;}
 
-// INFO PANEL TABS
+// INFO PANEL TOGGLE
+function toggleInfo(){const p=document.getElementById('info-panel');const b=document.getElementById('info-btn');const open=p.classList.toggle('open');b.classList.toggle('active',open);b.innerHTML=open?'✕ 닫기':'📋 매체·이관 정보';}
 function showITab(id,el){document.querySelectorAll('.itab').forEach(t=>t.classList.remove('on'));document.querySelectorAll('.info-section').forEach(s=>s.classList.remove('on'));el.classList.add('on');document.getElementById('is-'+id)?.classList.add('on');}
 
 // TOAST
