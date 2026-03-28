@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>제16대 대통령 말씀록 DB v44 (대시 스타일)</title>
+<title>제16대 대통령 말씀록 DB v44 (영구저장 패치)</title>
 <style>
 :root{
   --bg:#F1F3F8;--card:#fff;--b:#DDE2EC;--b2:#EEF1F8;
@@ -234,7 +234,7 @@ button,input,select,textarea{font-family:var(--sans)}
 
 <nav class="nav">
   <span class="n-badge">대통령기록관</span>
-  <span class="n-title">제16대 대통령 말씀록 DB v44 (대시 스타일)</span>
+  <span class="n-title">제16대 대통령 말씀록 DB v44 (영구저장 패치)</span>
   <span class="n-sub">노무현 대통령 2003-2007</span>
   <div class="n-right">
     <button class="n-btn" onclick="openImport()">↑ 파일 가져오기</button>
@@ -501,6 +501,20 @@ const XML_DOCS = [{"id":"1010146200711000000390000016","filename":"1010146200711
 let DOCS = BASE.map(d=>({...d,fmt:'html'}));
 XML_DOCS.forEach(x=>DOCS.push({...x,kb:+(x.attachments.reduce((s,a)=>s+(+a.size||0),0)/1024).toFixed(1),lines:x.path?x.path.length:0,fffd:0,enc_ok:true,tags:[String(x.year),'XML',x.dept,...(x.keywords||'').split(',').map(k=>k.trim()).filter(Boolean).slice(0,3)],snip:[x.content,x.task,x.keywords].filter(Boolean).join(' · ').slice(0,120),paragraphs:[]}));
 
+// ✅ localStorage에서 사용자 추가 XML 데이터 복원
+setTimeout(() => {
+  const restoredCount = restoreFromLocalStorage();
+  updateNavigationCount();
+  addManagementUI();
+  
+  if (restoredCount > 0) {
+    render();
+    setTimeout(() => {
+      showIS('ok', `🔄 ${restoredCount}건 자동 복원됨!`);
+    }, 1000);
+  }
+}, 100);
+
 let expId=null, SEL=new Set(), ST={type:'all',year:'all',q:''};
 
 // SELECTION
@@ -658,7 +672,14 @@ function mergeRecord(rec){
   const patch={paragraphs:rec.paragraphs,_imported:true,enc_ok:rec.enc_ok||rec.korean_chars>50,fffd:rec.fffd,snip:rec.snip};
   if(rec.title&&rec.title!=='(제목 없음)')patch.title=rec.title;if(rec.date)patch.date=rec.date;if(rec.registrar)patch.registrar=rec.registrar;if(rec.category)patch.category=rec.category;
   if(idx>=0){Object.assign(DOCS[idx],patch);return{merged:1,added:0};}
-  DOCS.push({...rec,...patch,type:rec.type||guessType(rec),kb:0,lines:rec.paragraphs.length,tags:guessTags(rec)});return{merged:0,added:1};
+  
+  const newDoc = {...rec,...patch,type:rec.type||guessType(rec),kb:0,lines:rec.paragraphs.length,tags:guessTags(rec),_userAdded:true,_imported_at:new Date().toISOString()};
+  DOCS.push(newDoc);
+  
+  // ✅ localStorage에 영구 저장
+  saveToLocalStorage(newDoc);
+  
+  return{merged:0,added:1};
 }
 function guessType(rec){const t=(rec.category||'').toLowerCase();if(t.includes('담화'))return '담화문';if(t.includes('편지')||t.includes('기고'))return '편지';if(t.includes('회의')||rec.title?.includes('회의'))return '회의';return '말씀';}
 function guessTags(rec){return[String(rec.year||''),'말씀'].filter(Boolean);}
@@ -819,7 +840,7 @@ function parseXMLFile(xmlText,filename){
     return step.who || step.opinion ? step : null;
   }).filter(Boolean);
   const id=byTag('RecordID')||filename.replace('.xml','');const keywords=byTag('Keyword1')||byTag('dmcSearchKeyword')||'';const dept=byTag('DeptName')||'';const year=parseInt(date)||0;
-  return [{id,filename,fmt:'xml',title,date,year,org:byTag('OrgName')||'대통령비서실',dept,registrar:byTag('UserID')||'',role:byTag('Title')||'',record_id:id,type:'XML',task:byTag('dmcTaskName')||'',keywords,category:byTag('BackgroundInfo')||'',open_time:byTag('OpenTime')||'',content:cleanContent,president_opinion:presOp,attachments,path,kb:+(attachments.reduce((s,a)=>s+(+a.size||0),0)/1024).toFixed(1),lines:path.length,fffd:0,enc_ok:true,tags:[String(year),'XML',dept,...keywords.split(',').map(k=>k.trim()).filter(Boolean).slice(0,3)].filter(Boolean),snip:[cleanContent,byTag('dmcTaskName'),keywords].filter(Boolean).join(' · ').slice(0,120),paragraphs:[],_imported:true}];
+  return [{id,filename,fmt:'xml',title,date,year,org:byTag('OrgName')||'대통령비서실',dept,registrar:byTag('UserID')||'',role:byTag('Title')||'',record_id:id,type:'XML',task:byTag('dmcTaskName')||'',keywords,category:byTag('BackgroundInfo')||'',open_time:byTag('OpenTime')||'',content:cleanContent,president_opinion:presOp,attachments,path,kb:+(attachments.reduce((s,a)=>s+(+a.size||0),0)/1024).toFixed(1),lines:path.length,fffd:0,enc_ok:true,tags:[String(year),'XML',dept,...keywords.split(',').map(k=>k.trim()).filter(Boolean).slice(0,3)].filter(Boolean),snip:[cleanContent,byTag('dmcTaskName'),keywords].filter(Boolean).join(' · ').slice(0,120),paragraphs:[],_imported:true,_userAdded:true,_imported_at:new Date().toISOString()}];
 }
 
 // JSON IMPORT
@@ -830,8 +851,37 @@ function processImport(data){
   let records=Array.isArray(data)?data:data.records?data.records:data.id?[data]:null;
   if(!records){showIS('err','인식할 수 없는 형식입니다.');return;}
   let merged=0,added=0;
-  records.forEach(rec=>{if(!rec.id||!rec.title)return;const paras=rec.paragraphs||(rec.body&&rec.body.paragraphs)||[];const patch={paragraphs:paras,_imported:true,enc_ok:true,fffd:0,snip:paras.slice(0,2).join(' ').slice(0,120)+(paras.length?'…':'')};if(rec.title)patch.title=rec.title;if(rec.date)patch.date=rec.date;if(rec.registrar)patch.registrar=rec.registrar;const idx=DOCS.findIndex(d=>d.id===rec.id);if(idx>=0){Object.assign(DOCS[idx],patch);merged++;}else{DOCS.push({...rec,...patch,year:rec.year||+rec.date?.slice(0,4)||0,kb:rec.kb||0,lines:paras.length,type:rec.type||'말씀',tags:rec.tags||[],fmt:rec.fmt||'html'});added++;}});
-  const msg=`✓ ${merged}건 업데이트 · ${added}건 신규`;showIS('ok',msg);toast(msg);render();setTimeout(closeImport,1600);
+  records.forEach(rec=>{
+    if(!rec.id||!rec.title)return;
+    const paras=rec.paragraphs||(rec.body&&rec.body.paragraphs)||[];
+    const patch={paragraphs:paras,_imported:true,enc_ok:true,fffd:0,snip:paras.slice(0,2).join(' ').slice(0,120)+(paras.length?'…':'')};
+    if(rec.title)patch.title=rec.title;
+    if(rec.date)patch.date=rec.date;
+    if(rec.registrar)patch.registrar=rec.registrar;
+    const idx=DOCS.findIndex(d=>d.id===rec.id);
+    if(idx>=0){
+      Object.assign(DOCS[idx],patch);merged++;
+    }else{
+      const newDoc = {...rec,...patch,year:rec.year||+rec.date?.slice(0,4)||0,kb:rec.kb||0,lines:paras.length,type:rec.type||'말씀',tags:rec.tags||[],fmt:rec.fmt||'html',_userAdded:true,_imported_at:new Date().toISOString()};
+      DOCS.push(newDoc);
+      added++;
+      
+      // ✅ localStorage에 영구 저장
+      saveToLocalStorage(newDoc);
+      
+      // ✅ 5건마다 자동 백업
+      if (getUserAddedCount() % 5 === 0) {
+        createAutoBackup();
+      }
+    }
+  });
+  const msg=`✓ ${merged}건 업데이트 · ${added}건 신규 (영구저장됨)`;
+  showIS('ok',msg);toast(msg);render();
+  setTimeout(() => {
+    updateNavigationCount();
+    addManagementUI();
+    closeImport();
+  }, 1600);
 }
 
 // DOWNLOADS
@@ -856,6 +906,130 @@ function showITab(id,el){document.querySelectorAll('.itab').forEach(t=>t.classLi
 
 // TOAST
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2500);}
+
+// ✅ localStorage 영구 저장 시스템 (v44 패치)
+function saveToLocalStorage(newDoc) {
+  try {
+    const storageKey = 'malsseum_xml_persistent_v44';
+    const saved = localStorage.getItem(storageKey);
+    let docs = saved ? JSON.parse(saved) : [];
+    
+    // 중복 체크
+    if (!docs.find(d => d.id === newDoc.id)) {
+      docs.push(newDoc);
+      localStorage.setItem(storageKey, JSON.stringify(docs));
+      console.log(`💾 localStorage 저장: ${docs.length}건`);
+    }
+  } catch (error) {
+    console.error('localStorage 저장 실패:', error);
+  }
+}
+
+function restoreFromLocalStorage() {
+  try {
+    const storageKey = 'malsseum_xml_persistent_v44';
+    const saved = localStorage.getItem(storageKey);
+    
+    if (saved) {
+      const docs = JSON.parse(saved);
+      docs.forEach(doc => {
+        // 중복 체크 후 DOCS에 추가
+        if (!DOCS.find(d => d.id === doc.id)) {
+          doc._userAdded = true;
+          doc._restored = true;
+          DOCS.push(doc);
+        }
+      });
+      
+      console.log(`🔄 localStorage에서 ${docs.length}건 복원`);
+      return docs.length;
+    }
+  } catch (error) {
+    console.error('localStorage 복원 실패:', error);
+  }
+  return 0;
+}
+
+function createAutoBackup() {
+  const userDocs = DOCS.filter(d => d._userAdded);
+  if (userDocs.length === 0) return;
+  
+  const backup = {
+    timestamp: new Date().toISOString(),
+    count: userDocs.length,
+    records: userDocs
+  };
+  
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `malsseum_backup_${Date.now()}.json`;
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  
+  setTimeout(() => {
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, 1000);
+  
+  console.log(`📦 자동 백업: ${userDocs.length}건`);
+}
+
+function getUserAddedCount() {
+  return DOCS.filter(d => d._userAdded).length;
+}
+
+function updateNavigationCount() {
+  const userCount = getUserAddedCount();
+  const totalXml = XML_DOCS.length + userCount;
+  
+  const navTag = document.querySelector('.nav .n-tag');
+  if (navTag) {
+    navTag.innerHTML = `HTML ${BASE.length} · XML ${totalXml}`;
+  }
+}
+
+function addManagementUI() {
+  const userCount = getUserAddedCount();
+  
+  if (userCount > 0) {
+    // 소스 추출 버튼 추가
+    const exportBtn = document.createElement('button');
+    exportBtn.className = 'n-btn';
+    exportBtn.innerHTML = '📋 소스 추출';
+    exportBtn.style.backgroundColor = 'rgba(42, 122, 48, 0.1)';
+    exportBtn.style.color = '#2A7A30';
+    exportBtn.onclick = function() {
+      const htmlSource = document.documentElement.outerHTML;
+      const newWindow = window.open();
+      newWindow.document.write('<pre style="white-space: pre-wrap; word-wrap: break-word; font-size: 11px; font-family: monospace;">' + htmlSource.replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</pre>');
+      alert('✅ 새 창에서 소스 확인!\n\n전체 선택(Cmd+A) → 복사(Cmd+C) → GitHub에 붙여넣기');
+    };
+    
+    const navRight = document.querySelector('.n-right');
+    if (navRight) {
+      navRight.appendChild(exportBtn);
+    }
+    
+    // 데이터 초기화 버튼 추가
+    const clearBtn = document.createElement('button');
+    clearBtn.className = 'n-btn';
+    clearBtn.innerHTML = '🗑️ 초기화';
+    clearBtn.style.color = '#A02020';
+    clearBtn.onclick = function() {
+      if (confirm(`저장된 ${userCount}건의 XML 데이터를 삭제하시겠습니까?`)) {
+        localStorage.removeItem('malsseum_xml_persistent_v44');
+        location.reload();
+      }
+    };
+    
+    if (navRight) {
+      navRight.appendChild(clearBtn);
+    }
+  }
+}
 
 render();
 </script>
